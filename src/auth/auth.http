@@ -6,3 +6,12 @@ content-type: application/json
   "email": "khalil-1@gmail.com", 
   "password": "khalil@123"
 }
+
+### refresh token 
+POST http://localhost:3000/auth/refresh-token
+content-type: application/json
+
+{
+  "userId":"c3489f2b-baea-47f6-a5ea-5f33383b1549",
+  "refreshToken": "686fbe32-4774-4b42-be75-e721f5ba4dc7"
+}

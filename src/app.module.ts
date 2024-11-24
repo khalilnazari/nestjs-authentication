@@ -5,6 +5,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { User } from './user/entities/user.entity';
+import { RefreshToken } from './auth/entities/refreshToken.entity';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
@@ -15,8 +17,12 @@ import { User } from './user/entities/user.entity';
       username: 'postgres',
       password: 'pgadmin',
       database: 'nextnestauth',
-      entities: [User],
+      entities: [User, RefreshToken],
       synchronize: true,
+    }),
+    JwtModule.register({
+      global: true,
+      secret: 'this is temporrary',
     }),
     AuthModule,
     UserModule,

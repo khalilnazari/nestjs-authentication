@@ -1,14 +1,20 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { LoginDto } from './dto/cauth.dto';
+import { LoginDto, RefreshTokenDto } from './dto/cauth.dto';
 import { UserService } from 'src/user/user.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
+import { v4 as uuidv4 } from 'uuid';
+import { InjectRepository } from '@nestjs/typeorm';
+import { RefreshToken } from './entities/refreshToken.entity';
+import { MoreThanOrEqual, Repository } from 'typeorm';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly userService: UserService,
     private jwtService: JwtService,
+    @InjectRepository(RefreshToken)
+    private readonly tokenRepository: Repository<RefreshToken>,
   ) {}
 
   async login(authData: LoginDto) {
@@ -29,13 +35,59 @@ export class AuthService {
 
     // create auth token
     const { password: p, ...rest } = isUserExist;
-    return this.generateAuthToken(rest);
+    return await this.generateAuthToken(rest);
   }
 
-  generateAuthToken(user) {
-    const accessToken = this.jwtService.sign({ user });
+  async storeRefershToken(refreshToken: string, userId: string) {
+    const expiryDate = new Date();
+    expiryDate.setDate(expiryDate.getDate() + 3);
+
+    const tokenData = this.tokenRepository.create({
+      expiryDate,
+      userId,
+      refreshToken,
+    });
+
+    return await this.tokenRepository.save(tokenData);
+  }
+
+  async getRefreshToken(data: RefreshTokenDto) {
+    const { refreshToken, userId } = data;
+    const isTokenExist = await this.tokenRepository.findOneBy({
+      refreshToken,
+      expiryDate: MoreThanOrEqual(new Date()),
+      userId,
+    });
+    if (!isTokenExist) throw new UnauthorizedException('token does not exist');
+
+    const user = await this.userService.findOneById(isTokenExist.userId);
+    if (!user) throw new UnauthorizedException('token does not exist');
+
+    const { password, ...rest } = user;
+    return await this.generateAuthToken(rest);
+  }
+
+  async generateAuthToken(user) {
+    const refereshToken = uuidv4();
+
+    const accessToken = await this.jwtService.signAsync(user, {
+      expiresIn: '1h',
+    });
+
+    await this.removeRefreshToken(user.id);
+    await this.storeRefershToken(refereshToken, user.id);
+
     return {
       accessToken,
+      refereshToken,
     };
+  }
+
+  async removeRefreshToken(userId: string) {
+    const token = await this.tokenRepository.findOneBy({ userId });
+
+    if (token) {
+      await this.tokenRepository.delete(token.id);
+    }
   }
 }
