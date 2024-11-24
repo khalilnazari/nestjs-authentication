@@ -6,10 +6,13 @@ import {
   Patch,
   Param,
   Delete,
+  UseGuards,
+  Req,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { AuthGuard } from 'src/auth/auth.guards';
 
 @Controller('user')
 export class UserController {
@@ -26,7 +29,9 @@ export class UserController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  @UseGuards(AuthGuard)
+  findOne(@Param('id') id: string, @Req() res) {
+    // console.log(res.user);
     return this.userService.findOne(id);
   }
 

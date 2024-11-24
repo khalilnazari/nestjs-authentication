@@ -71,7 +71,7 @@ export class AuthService {
     const refereshToken = uuidv4();
 
     const accessToken = await this.jwtService.signAsync(user, {
-      expiresIn: '1h',
+      expiresIn: '30s',
     });
 
     await this.removeRefreshToken(user.id);

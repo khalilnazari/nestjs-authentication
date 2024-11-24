@@ -7,6 +7,7 @@ import { UserModule } from './user/user.module';
 import { User } from './user/entities/user.entity';
 import { RefreshToken } from './auth/entities/refreshToken.entity';
 import { JwtModule } from '@nestjs/jwt';
+import appConfig from './config/appConfig';
 
 @Module({
   imports: [
@@ -22,7 +23,7 @@ import { JwtModule } from '@nestjs/jwt';
     }),
     JwtModule.register({
       global: true,
-      secret: 'this is temporrary',
+      secret: appConfig().jwt.secret,
     }),
     AuthModule,
     UserModule,
