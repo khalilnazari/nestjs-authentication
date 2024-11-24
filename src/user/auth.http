@@ -1,0 +1,20 @@
+### signup 
+POST http://localhost:3000/user/signup
+content-type: application/json
+
+{
+  "name": "khalil", 
+  "email": "khalil-2@gmail.com", 
+  "password": "khalil@123"
+}
+
+
+### get one user
+GET http://localhost:3000/user/1f58ca0b-b659-4e2d-8f7c-345900a99cc2
+
+### get all user
+GET http://localhost:3000/user
+
+
+### delete one user
+DELETE http://localhost:3000/user/1f58ca0b-b659-4e2d-8f7c-345900a99cc2
