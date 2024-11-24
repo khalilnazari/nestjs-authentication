@@ -3,6 +3,9 @@
 /node_modules
 /build
 
+# api endpionts 
+
+
 # Logs
 logs
 *.log
