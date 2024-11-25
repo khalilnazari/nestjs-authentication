@@ -10,7 +10,7 @@ import {
   Req,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
+import { ChangePasswordDto, CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { AuthGuard } from 'src/auth/auth.guards';
 
@@ -30,9 +30,15 @@ export class UserController {
 
   @Get(':id')
   @UseGuards(AuthGuard)
-  findOne(@Param('id') id: string, @Req() res) {
-    // console.log(res.user);
+  findOne(@Param('id') id: string, @Req() req) {
     return this.userService.findOne(id);
+  }
+
+  @UseGuards(AuthGuard)
+  @Patch('change-password')
+  async changePassword(@Body() data: ChangePasswordDto, @Req() req) {
+    const { id } = req.user;
+    return await this.userService.changePassword(data, id);
   }
 
   @Patch(':id')

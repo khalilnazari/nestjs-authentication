@@ -18,3 +18,14 @@ GET http://localhost:8000/user
 
 ### delete one user
 DELETE http://localhost:8000/user/1f58ca0b-b659-4e2d-8f7c-345900a99cc2
+
+
+### change password
+PATCH http://localhost:8000/user/change-password
+content-type: application/json
+
+{
+  "userId": "c3489f2b-baea-47f6-a5ea-5f33383b1549", 
+  "oldPassword": "khalil@123",
+  "newPassword": "khalil@1234"
+}

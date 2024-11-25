@@ -2,8 +2,9 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
+import { ChangePasswordDto, CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
@@ -62,6 +63,23 @@ export class UserService {
     return `This action updates a #${id} user`;
   }
 
+  async changePassword(data: ChangePasswordDto, userId: string) {
+    const { oldPassword, newPassword } = data;
+
+    const user = await this.findOneById(userId);
+    if (!user) throw new NotFoundException();
+
+    const oldPasswordMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!oldPasswordMatch) {
+      throw new UnauthorizedException('Incorrect password');
+    }
+
+    const newPasswordHashed = await this.hashPassword(newPassword);
+    user.password = newPasswordHashed;
+
+    return await this.userRepository.save(user);
+  }
+
   async remove(id: string) {
     const user = await this.findOneById(id);
     if (!user) {
@@ -71,7 +89,7 @@ export class UserService {
     return await this.userRepository.delete(id);
   }
 
-  async hashPassword(text): Promise<string> {
+  async hashPassword(text: string): Promise<string> {
     return await bcrypt.hash(text, 10);
   }
 }
