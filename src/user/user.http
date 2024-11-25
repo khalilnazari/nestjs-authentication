@@ -1,20 +1,20 @@
 ### signup 
-POST http://localhost:3000/user/signup
+POST http://localhost:8000/user/signup
 content-type: application/json
 
 {
-  "name": "khalil", 
-  "email": "khalil-2@gmail.com", 
+  "name": "khalil3", 
+  "email": "khalil-3@gmail.com", 
   "password": "khalil@123"
 }
 
 
 ### get one user
-GET http://localhost:3000/user/1f58ca0b-b659-4e2d-8f7c-345900a99cc2
+GET http://localhost:8000/user/b8681c79-2698-4ef3-ba77-73f2dfe1ad4d
 
 ### get all user
-GET http://localhost:3000/user
+GET http://localhost:8000/user
 
 
 ### delete one user
-DELETE http://localhost:3000/user/1f58ca0b-b659-4e2d-8f7c-345900a99cc2
+DELETE http://localhost:8000/user/1f58ca0b-b659-4e2d-8f7c-345900a99cc2

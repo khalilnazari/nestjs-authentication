@@ -8,22 +8,37 @@ import { User } from './user/entities/user.entity';
 import { RefreshToken } from './auth/entities/refreshToken.entity';
 import { JwtModule } from '@nestjs/jwt';
 import appConfig from './config/appConfig';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: 'localhost',
-      port: 5432,
-      username: 'postgres',
-      password: 'pgadmin',
-      database: 'nextnestauth',
-      entities: [User, RefreshToken],
-      synchronize: true,
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (config) => ({
+        type: 'postgres',
+        host: config.get('database.host'),
+        port: +config.get('database.port'),
+        username: config.get('database.username'),
+        password: config.get('database.password'),
+        database: config.get('database.database'),
+        entities: [User, RefreshToken],
+        synchronize: true,
+      }),
+      inject: [ConfigService],
     }),
-    JwtModule.register({
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: async (config) => ({
+        secret: config.get('jwt.secret'),
+      }),
       global: true,
-      secret: appConfig().jwt.secret,
+      inject: [ConfigService],
+    }),
+    ConfigModule.forRoot({
+      cache: true,
+      isGlobal: true,
+      load: [appConfig],
+      envFilePath: ['.env'],
     }),
     AuthModule,
     UserModule,
