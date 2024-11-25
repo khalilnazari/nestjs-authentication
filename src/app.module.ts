@@ -9,6 +9,7 @@ import { RefreshToken } from './auth/entities/refreshToken.entity';
 import { JwtModule } from '@nestjs/jwt';
 import appConfig from './config/appConfig';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ForgetPasswordToken } from './user/entities/forgetPassword.entity';
 
 @Module({
   imports: [
@@ -21,7 +22,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
         username: config.get('database.username'),
         password: config.get('database.password'),
         database: config.get('database.database'),
-        entities: [User, RefreshToken],
+        entities: [User, RefreshToken, ForgetPasswordToken],
         synchronize: true,
       }),
       inject: [ConfigService],

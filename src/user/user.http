@@ -25,7 +25,14 @@ PATCH http://localhost:8000/user/change-password
 content-type: application/json
 
 {
-  "userId": "c3489f2b-baea-47f6-a5ea-5f33383b1549", 
   "oldPassword": "khalil@123",
   "newPassword": "khalil@1234"
+}
+
+### change password
+PATCH http://localhost:8000/user/reset-password
+content-type: application/json
+
+{
+  "email": "khalil@123"
 }

@@ -4,17 +4,25 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { ChangePasswordDto, CreateUserDto } from './dto/create-user.dto';
+import {
+  ChangePasswordDto,
+  CreateUserDto,
+  ResetPasswordDto,
+} from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
+import { nanoid } from 'nanoid';
+import { ForgetPasswordToken } from './entities/forgetPassword.entity';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,
+    @InjectRepository(ForgetPasswordToken)
+    private readonly forgetPasswordRepository: Repository<ForgetPasswordToken>,
   ) {}
 
   async create(createUserDto: CreateUserDto) {
@@ -78,6 +86,28 @@ export class UserService {
     user.password = newPasswordHashed;
 
     return await this.userRepository.save(user);
+  }
+
+  async forgetPassword(data: ResetPasswordDto) {
+    const user = await this.findOneByEmail(data.email);
+
+    if (user) {
+      await this.forgetPasswordRepository.delete(user.id);
+
+      const tokenString = nanoid(64);
+      const expiryDate = new Date();
+      expiryDate.setHours(expiryDate.getMinutes() + 10);
+      const data = this.forgetPasswordRepository.create({
+        userId: user.id,
+        token: tokenString,
+        expiryDate,
+      });
+
+      // send email
+      await this.forgetPasswordRepository.save(data);
+    }
+
+    return { message: 'Please check your email' };
   }
 
   async remove(id: string) {

@@ -10,7 +10,11 @@ import {
   Req,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { ChangePasswordDto, CreateUserDto } from './dto/create-user.dto';
+import {
+  ChangePasswordDto,
+  CreateUserDto,
+  ResetPasswordDto,
+} from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { AuthGuard } from 'src/auth/auth.guards';
 
@@ -38,7 +42,13 @@ export class UserController {
   @Patch('change-password')
   async changePassword(@Body() data: ChangePasswordDto, @Req() req) {
     const { id } = req.user;
+
     return await this.userService.changePassword(data, id);
+  }
+
+  @Patch('forgot-password')
+  async resetPassword(@Body() data: ResetPasswordDto) {
+    return await this.userService.forgetPassword(data);
   }
 
   @Patch(':id')
