@@ -8,6 +8,7 @@ import {
 import {
   ChangePasswordDto,
   CreateUserDto,
+  ForgetPasswordDto,
   ResetPasswordDto,
 } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -71,8 +72,9 @@ export class UserService {
     return await this.userRepository.find();
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(id: string, updateUserDto: UpdateUserDto) {}
+  async updateWithObject(user: UpdateUserDto) {
+    await this.userRepository.save(user);
   }
 
   async changePassword(data: ChangePasswordDto, userId: string) {
@@ -92,7 +94,7 @@ export class UserService {
     return await this.userRepository.save(user);
   }
 
-  async forgetPassword(data: ResetPasswordDto) {
+  async forgetPassword(data: ForgetPasswordDto) {
     const user = await this.findOneByEmail(data.email);
     if (!user) {
       Logger.warn(__dirname, `User does not exist Email: ${data.email}`);
@@ -104,8 +106,8 @@ export class UserService {
       const tokenString = nanoid(64);
       const expiryDate = new Date();
 
-      // Set expiry date 10 hours
-      expiryDate.setHours(expiryDate.getMinutes() + 10);
+      // Set expiry date 10 minues
+      expiryDate.setMinutes(expiryDate.getMinutes() + 10);
 
       const data = this.forgetPasswordRepository.create({
         userId: user.id,
@@ -137,6 +139,47 @@ export class UserService {
     }
 
     return { message: 'Please check your email' };
+  }
+
+  async resetPassword(data: ResetPasswordDto) {
+    const { newPassword, token } = data;
+
+    // validate token
+    const isTokenExist = await this.forgetPasswordRepository.findOneBy({
+      token,
+    });
+
+    if (!isTokenExist || isTokenExist.expiryDate > new Date()) {
+      Logger.warn(`${__dirname} Token does not exist ${token}`);
+      throw new NotFoundException('Token does not exist');
+    }
+
+    // validate user
+    const { userId } = isTokenExist;
+    const isUserExist = await this.findOneById(userId);
+    if (!isUserExist) {
+      Logger.warn(`${__dirname} User not found id: ${userId}`);
+      throw new NotFoundException(
+        'There is not user associated with this token',
+      );
+    }
+
+    // has new password ad update user
+    Logger.log(`${__dirname} Update password for userId: ${userId}`);
+    const hashedPassword = await this.hashPassword(newPassword);
+    isUserExist.password = hashedPassword;
+    await this.updateWithObject(isUserExist);
+    Logger.log(`${__dirname} Update password completed for userId: ${userId}`);
+
+    // delete token
+    await this.forgetPasswordRepository.delete(isTokenExist.id);
+    Logger.log(
+      `${__dirname} Token data has been removed for userId: ${userId}`,
+    );
+
+    return {
+      message: 'Password has been updated successfuly',
+    };
   }
 
   async remove(id: string) {

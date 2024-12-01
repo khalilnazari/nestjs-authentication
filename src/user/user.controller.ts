@@ -13,6 +13,7 @@ import { UserService } from './user.service';
 import {
   ChangePasswordDto,
   CreateUserDto,
+  ForgetPasswordDto,
   ResetPasswordDto,
 } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -47,13 +48,18 @@ export class UserController {
   }
 
   @Patch('forgot-password')
-  async resetPassword(@Body() data: ResetPasswordDto) {
+  async forgetPassword(@Body() data: ForgetPasswordDto) {
     return await this.userService.forgetPassword(data);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.userService.update(+id, updateUserDto);
+    return this.userService.update(id, updateUserDto);
+  }
+
+  @Post('reset-password')
+  resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
+    return this.userService.resetPassword(resetPasswordDto);
   }
 
   @Delete(':id')

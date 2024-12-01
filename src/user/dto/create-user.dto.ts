@@ -9,6 +9,11 @@ export class ChangePasswordDto {
   newPassword: string;
 }
 
-export class ResetPasswordDto {
+export class ForgetPasswordDto {
   email: string;
+}
+
+export class ResetPasswordDto {
+  newPassword: string;
+  token: string;
 }
