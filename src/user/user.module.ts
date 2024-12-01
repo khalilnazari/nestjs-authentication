@@ -4,9 +4,13 @@ import { UserController } from './user.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { ForgetPasswordToken } from './entities/forgetPassword.entity';
+import { MailerModule } from 'src/mailer/mailer.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, ForgetPasswordToken])],
+  imports: [
+    MailerModule,
+    TypeOrmModule.forFeature([User, ForgetPasswordToken]),
+  ],
   controllers: [UserController],
   providers: [UserService],
   exports: [UserService],

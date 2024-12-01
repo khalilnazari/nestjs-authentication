@@ -10,6 +10,7 @@ import { JwtModule } from '@nestjs/jwt';
 import appConfig from './config/appConfig';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ForgetPasswordToken } from './user/entities/forgetPassword.entity';
+import { MailerModule } from './mailer/mailer.module';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { ForgetPasswordToken } from './user/entities/forgetPassword.entity';
     }),
     AuthModule,
     UserModule,
+    MailerModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -16,6 +16,8 @@ import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { nanoid } from 'nanoid';
 import { ForgetPasswordToken } from './entities/forgetPassword.entity';
+import { MailerService } from 'src/mailer/mailer.service';
+import { EmailSubject, EmailType } from 'src/mailer/dto/mailer.dto';
 
 @Injectable()
 export class UserService {
@@ -23,6 +25,7 @@ export class UserService {
     @InjectRepository(User) private readonly userRepository: Repository<User>,
     @InjectRepository(ForgetPasswordToken)
     private readonly forgetPasswordRepository: Repository<ForgetPasswordToken>,
+    private readonly mailerService: MailerService,
   ) {}
 
   async create(createUserDto: CreateUserDto) {
@@ -96,14 +99,36 @@ export class UserService {
 
       const tokenString = nanoid(64);
       const expiryDate = new Date();
+
+      // Set expiry date 10 hours
       expiryDate.setHours(expiryDate.getMinutes() + 10);
+
       const data = this.forgetPasswordRepository.create({
         userId: user.id,
         token: tokenString,
         expiryDate,
       });
 
+      const forgetPasswordLink = `http://localhost:3000/forget-password?token=${tokenString}`;
+
       // send email
+      const emailType = EmailType.forgetPassword;
+      const emailSubject = EmailSubject.forgetPassword;
+      const emailData = {
+        type: emailType,
+        bodyData: {
+          name: user.name,
+          link: forgetPasswordLink,
+          client: 'App',
+        },
+        recepientInfo: {
+          to: user.email,
+          subject: emailSubject,
+        },
+      };
+      this.mailerService.sendMail(emailData);
+
+      // save to db
       await this.forgetPasswordRepository.save(data);
     }
 
