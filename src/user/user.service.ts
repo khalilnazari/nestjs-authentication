@@ -1,6 +1,7 @@
 import {
   ConflictException,
   Injectable,
+  Logger,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -93,6 +94,9 @@ export class UserService {
 
   async forgetPassword(data: ResetPasswordDto) {
     const user = await this.findOneByEmail(data.email);
+    if (!user) {
+      Logger.warn(__dirname, `User does not exist Email: ${data.email}`);
+    }
 
     if (user) {
       await this.forgetPasswordRepository.delete(user.id);
@@ -109,7 +113,7 @@ export class UserService {
         expiryDate,
       });
 
-      const forgetPasswordLink = `http://localhost:3000/forget-password?token=${tokenString}`;
+      const forgetPasswordLink = `http://localhost:3000/reset-password?token=${tokenString}`;
 
       // send email
       const emailType = EmailType.forgetPassword;

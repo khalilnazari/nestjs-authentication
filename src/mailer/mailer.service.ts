@@ -12,8 +12,6 @@ export class MailerService {
   private async handleSend(data: EmailData) {
     const mailerConfig = this.configService.get('mailer');
     try {
-      console.log(data);
-
       const transporter = nodemailer.createTransport({
         host: mailerConfig.host,
         service: mailerConfig.service,
@@ -22,8 +20,6 @@ export class MailerService {
           pass: mailerConfig.pass,
         },
       });
-
-      console.log(transporter);
 
       await transporter.sendMail(data);
       return true;
