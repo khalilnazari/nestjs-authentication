@@ -14,7 +14,7 @@ import {
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
-import { Repository } from 'typeorm';
+import { LessThan, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { nanoid } from 'nanoid';
 import { ForgetPasswordToken } from './entities/forgetPassword.entity';
@@ -101,7 +101,12 @@ export class UserService {
     }
 
     if (user) {
-      await this.forgetPasswordRepository.delete(user.id);
+      const tokenExist = await this.forgetPasswordRepository.findOneBy({
+        userId: user.id,
+      });
+      if (tokenExist) {
+        await this.forgetPasswordRepository.delete(tokenExist.id);
+      }
 
       const tokenString = nanoid(64);
       const expiryDate = new Date();
@@ -147,9 +152,10 @@ export class UserService {
     // validate token
     const isTokenExist = await this.forgetPasswordRepository.findOneBy({
       token,
+      expiryDate: LessThan(new Date()),
     });
 
-    if (!isTokenExist || isTokenExist.expiryDate > new Date()) {
+    if (!isTokenExist) {
       Logger.warn(`${__dirname} Token does not exist ${token}`);
       throw new NotFoundException('Token does not exist');
     }
